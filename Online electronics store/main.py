@@ -29,46 +29,67 @@ cursor = db.cursor()
 #)""")
 choice = input('Оберіть дію')
 
-
+#Додати продукт у БД
 if choice == '1':
     id = input("id ¯\_(ツ)_/¯")
     name_p = input("Ім'я")
     category_p = input("Категорія")
     price_p = input("Ціна")
-    cursor.execute(
-        "INSERT INTO products (product_id, name, category, price) "
-        "VALUES (?, ?, ?, ?)",
-        (id, name_p, category_p, price_p)
-    )
+    #Збереження змін в базі даних
+    yes_no = input("Ви хочете ви зберегти зміні в Бази Данних? (Так/Ні)")
+    if yes_no == "Так":
+        cursor.execute(
+            "INSERT INTO products (product_id, name, category, price) "
+            "VALUES (?, ?, ?, ?)",
+            (id, name_p, category_p, price_p)
+        )
+    else:
+        print("-")
+
+#Список усіх продуктів
 elif choice == '2':
     cursor.execute("SELECT * FROM products")
     print(cursor.fetchall())
 
+#Додати кліента у БД
 elif choice == '3':
     id = input("id ¯\_(ツ)_/¯")
     name_c = input("Ім'я")
     lastname_c = input("Фамілія")
     email_c = input("Емеїл")
-    cursor.execute(
-        "INSERT INTO customers (customer_id, first_name, last_name, email) "
-        "VALUES (?, ?, ?, ?)",
-        (id, name_c, lastname_c, email_c))
+    #Збереження змін в базі даних
+    yes_no = input("Ви хочете ви зберегти зміні в Бази Данних? (Так/Ні)")
+    if yes_no == "Так":
+        cursor.execute(
+            "INSERT INTO customers (customer_id, first_name, last_name, email) "
+            "VALUES (?, ?, ?, ?)",
+            (id, name_c, lastname_c, email_c))
+    else:
+        print("-")
 
+#Список усіх кліентів
 elif choice == '4':
     cursor.execute("SELECT * FROM customers")
     print(cursor.fetchall())
 
+#Додати заказ у БД
 elif choice == '5':
     o_id = input("id order ¯\_(ツ)_/¯")
     c_id = input("id customer ¯\_(ツ)_/¯")
     p_id = input("id product ¯\_(ツ)_/¯")
     c_quantity = input("Кількість")
     order_date = input("Дата заказу")
-    cursor.execute(
-        "INSERT INTO orders (order_id, customer_id, product_id, quantity, order_date) "
-        "VALUES (?, ?, ?, ?, ?)",
-        (o_id, c_id, p_id, c_quantity, order_date))
+    #Збереження змін в базі даних
+    yes_no = input("Ви хочете ви зберегти зміні в Бази Данних? (Так/Ні)")
+    if yes_no == "Так":
+        cursor.execute(
+            "INSERT INTO orders (order_id, customer_id, product_id, quantity, order_date) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (o_id, c_id, p_id, c_quantity, order_date))
+    else:
+        print("-")
 
+#Список усіх заказів
 elif choice == '6':
     cursor.execute("SELECT * FROM orders")
     print(cursor.fetchall())
@@ -118,13 +139,26 @@ elif choice == "12":
 #Найбільш популярна категорія товарів: (У процессі)
 elif choice == "13":
     cursor.execute("""
-    SELECT product_id, COUNT(*) as category_quantity FROM orders 
-    GROUP BY product_id;""")
-    result = cursor.fetchall()
+    SELECT 
+        products.category, 
+        COUNT(products.category) AS category_count
+    FROM 
+        orders
+    JOIN 
+        products 
+    ON 
+        orders.product_id = products.product_id
+    GROUP BY 
+        products.category
+    ORDER BY 
+        category_count DESC
+    LIMIT 1;""")
+    result = cursor.fetchone()
     if result:
-        print(f"Потім буде зроблено")
+        print(f"Сама популярна категорія це - {result[0]} (Усього {result[1]} заказів)")
     else:
-        print("Немає товарів або немає/не працює База Данних")
+        print("Немає заказів або немає/не працює База Данних")
+
 #Загальна кількість товарів кожної категорії
 elif choice == "14":
     cursor.execute("""
@@ -138,7 +172,17 @@ elif choice == "14":
     else:
         print("Немає товарів у категоріях.")
 
-#Оновлення цін:
+#Оновлення цін (Оновіть ціни товарів в категорії "смартфони" на 10% збільшення.
+elif choice == "15":
+    cursor.execute("""
+    UPDATE products
+    SET price = price * 1.1
+    WHERE category = 'Смартфони';""")
+    result = cursor.fetchall()
+    if result:
+        print("+")
+    else:
+        print("-")
 
 
 
